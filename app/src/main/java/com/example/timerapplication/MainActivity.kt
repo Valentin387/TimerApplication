@@ -1,11 +1,14 @@
 package com.example.timerapplication
 
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.widget.TextView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.app.ActivityCompat
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -19,7 +22,27 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    android.Manifest.permission.FOREGROUND_SERVICE,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                    android.Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                    android.Manifest.permission.ACCESS_COARSE_LOCATION,
+                    android.Manifest.permission.POST_NOTIFICATIONS,
+                ),
+                0
+            )
+        }
+
         setContentView(R.layout.activity_main)
+
+        Intent(applicationContext, RunningService::class.java).also { intent ->
+            intent.action = RunningService.Actions.START.toString()
+            startService(intent)
+        }
 
 
         val textView = findViewById<TextView>(R.id.textView01)
@@ -36,6 +59,10 @@ class MainActivity : AppCompatActivity() {
             override fun onFinish() {
                 // Update the UI
                 textView.text = "Done!"
+                Intent(applicationContext, RunningService::class.java).also { intent ->
+                    intent.action = RunningService.Actions.STOP.toString()
+                    startService(intent)
+                }
             }
         }
 
